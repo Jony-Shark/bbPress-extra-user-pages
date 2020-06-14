@@ -42,7 +42,7 @@ class ExtraUserPages
         foreach ($this->userPages as $page) {
             // FIXME More strict condition
             if (!mb_strpos($wp->request, $page['slug'])) {
-                return;
+                continue;
             }
             $this->currentUserPage = $page;
             \add_filter('bbp_is_single_user_profile', '__return_false');
