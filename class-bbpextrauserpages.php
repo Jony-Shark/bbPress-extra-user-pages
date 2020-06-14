@@ -86,6 +86,7 @@ class BbpExtraUserPages
      */
     public function add_menu_items()
     {
+        //FIXME When we using a custom menu item, the 'bbPress' 'Profile' item is also marked current.
         \array_map(
             function( $page )
             {
