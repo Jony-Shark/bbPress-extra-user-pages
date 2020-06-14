@@ -65,7 +65,7 @@ class ExtraUserPages
 
         foreach ($this->userPages as $page) {
             if (!isset($page['slug'])) {
-                return;
+                continue;
             }
 
             \add_rewrite_tag(sprintf('%%%s%%', $page['slug']), '([1]{1,})');
