@@ -14,13 +14,20 @@ class BbpExtraUserPages
     private $userPages;
 
     /**
+     * Array of current subpage 'slug' and 'title'.
+     *
+     * @var array<string>
+     */
+    private $currentUserPage;
+
+    /**
      * Get pages array
      *
      * @param array $pages
      */
     public function __construct( $pages = [] )
     {
-        if ( \is_admin() || ! \is_user_logged_in() || ! in_array( 'bbPress/bbpress.php', (array) \get_option( 'active_plugins', array() ), true ) ) {
+        if ( \is_admin() || ! \is_user_logged_in() || ! $this->bbpActive() ) {
             return;
         }
         $this->userPages     = \apply_filters( 'beup_extra_account_pages', $pages );
@@ -32,15 +39,24 @@ class BbpExtraUserPages
      */
     private function hooks()
     {
-        \add_action( 'init', [ $this, 'set_rewrites' ], 0, 0 );
-        \add_action( 'beup_add_extra_user_pages', [ $this, 'select_page_template' ], 10, 0  );
-        \add_action( 'beup_extra_user_page_menuitems', [ $this, 'add_menu_items' ], 10, 0  );
+        \add_action( 'init', [ $this, 'setRewrites' ], 0, 0 );
+        \add_action( 'beup_add_extra_user_pages', [ $this, 'getSubpageTemplate' ], 10, 0  );
+        \add_action( 'beup_extra_user_page_menuitems', [ $this, 'addMenuItems' ], 10, 0  );
+        \add_action( 'bbp_template_before_user_details_menu_items', [ $this, 'getCurrentSubpage' ], 10, 0  );
+    }
+
+    /**
+     * Check bbp plugin activation.
+     */
+    private function bbpActive()
+    {
+        return in_array( 'bbPress/bbpress.php', (array) \get_option( 'active_plugins', array() ), true );
     }
 
     /**
      * Set rewrite rules and tags.
      */
-    public function set_rewrites()
+    public function setRewrites()
     {
         $userPages = get_transient( 'beup_extra_user_pages' );
         if ( false !== $userPages && $userPages === $this->userPages )
@@ -65,35 +81,28 @@ class BbpExtraUserPages
     }
 
     /**
-     * Select page template.
+     * Get subpage template.
      */
-    public function select_page_template()
+    public function getSubpageTemplate()
     {
-        \array_map(
-            function( $page )
-            {
-                if ( $this->is_extra_user_page( $page['slug'] ) )
-                {
-                    $this->get_extra_user_page_template( $page['slug'] );
-                }
-            },
-            $this->userPages
-        );
+        \get_template_part( 'bbpress/user/user', $this->currentUserPage['slug'] );
     }
 
     /**
      * Add menu items to Bbp user page
      */
-    public function add_menu_items()
+    public function addMenuItems()
     {
-        //FIXME When we using a custom menu item, the 'bbPress' 'Profile' item is also marked current.
         \array_map(
             function( $page )
             {
             ?>
-                <li class="<?php if ( $this->is_extra_user_page( $page['slug'] ) ) : ?>current<?php endif; ?>">
-                    <span class="bbp-user-edit-link">
-                        <a href="<?php \printf( '%s%s/', \bbp_user_profile_url(), $page['slug'] ); ?>" title="<?php echo \esc_html( $page['title'] ); ?>"><?php echo \esc_html( $page['title'] ); ?></a>
+                <li class="<?php if ( $this->currentUserPage === $page ) { echo 'current'; } ?>">
+                    <span class="bbp-user-<?php echo esc_attr( $page['slug'] ); ?>-link">
+                        <a href="<?php \bbp_user_profile_url(); echo esc_attr( $page['slug'] ); ?>/"
+                            title="<?php echo \esc_html( $page['title'] ); ?>">
+                            <?php echo \esc_html( $page['title'] ); ?>
+                        </a>
                     </span>
                 </li>
             <?php
@@ -103,20 +112,24 @@ class BbpExtraUserPages
     }
 
     /**
-     * Get template-part from theme's 'bbpress/user/' folder
+     * Get current subpage slug.
      */
-    private function get_extra_user_page_template( $page_slug )
-    {
-        \add_filter( 'bbp_is_single_user_profile', function() { return false; } );
-        \get_template_part( 'bbpress/user/user', $page_slug );
-    }
-
-    /**
-     * Check request for page slugs.
-     */
-    private function is_extra_user_page( $page_slug )
+    public function getCurrentSubpage()
     {
         global $wp;
-        return mb_strpos( $wp->request, $page_slug );
+
+        \array_map(
+            function( $page ) use ( $wp )
+            {
+                if ( ! mb_strpos( $wp->request, $page['slug'] ) )
+                {
+                    return;
+                }
+                $this->currentUserPage = $page;
+                \add_filter( 'bbp_is_single_user_profile', function() { return false; } );
+            },
+            $this->userPages
+        );
     }
+
 }
