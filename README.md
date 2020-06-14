@@ -5,14 +5,14 @@ Add custom bbPress user subpages.
 ### Installation
 
 1. Download the [plugin from GitHub](https://github.com/Jony-Shark/bbPress-extra-user-pages/archive/master.zip)
-1. WordPress admin / Plugin / Add new / Upload plugin
+1. WordPress admin / Plugins / Add new / Upload plugin
 1. Copy `/bbpress` folder from the plugin to your current theme
 1. Add `add_filter` call below to your current theme's `functions.php`
 1. Activate the plugin: WordPress admin / Plugin
 
 ```php
 add_filter(
-    'beup_extra_account_pages',
+    'beup/extra-user-pages',
     function ($userPages) {
         return [
             // List of Slug and Title pairs.
