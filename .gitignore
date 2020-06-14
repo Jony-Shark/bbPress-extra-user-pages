@@ -1,0 +1,5 @@
+# GENERAL
+/vendor
+/keys
+.swp
+composer.lock
