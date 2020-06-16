@@ -27,7 +27,9 @@ class ExtraUserPages
     {
         $this->userPages = \apply_filters('beup/extra-user-pages', $userPages);
 
-        \add_action('init', [$this, 'addRewriteRules'], 0, 0);
+        // We're in init hook.
+        $this->addRewriteRules();
+
         \add_action('bbp_template_before_user_details_menu_items', [$this, 'setCurrentSubpageSlug'], 10, 0);
 
         \add_action('beup/extra-user-details-menu-items', [$this, 'printMenuItems'], 10, 0);

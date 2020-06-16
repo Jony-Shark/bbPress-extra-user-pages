@@ -25,15 +25,14 @@ function beup_init()
         if (\is_admin()
             || !\is_user_logged_in()
             || !\function_exists('is_bbpress')
-            || !\is_bbpress()
         ) {
             return;
         }
 
         require_once __DIR__ . '/src/ExtraUserPages.php';
-        require_once __DIR__ . '/src/helpers';
+        require_once __DIR__ . '/src/helpers.php';
 
         new ExtraUserPages();
 }
 
-\add_action('plugins_loaded', 'beup_init');
+\add_action('init', 'beup_init');
