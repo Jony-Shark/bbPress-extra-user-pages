@@ -6,6 +6,8 @@
 
 namespace SzepeViktor\Bbpress;
 
+use function SzepeViktor\Bbpress\tag;
+
 class ExtraUserPages
 {
     /**
@@ -90,16 +92,23 @@ class ExtraUserPages
     public function printMenuItems()
     {
         foreach ($this->userPages as $page) {
-            ?>
-            <li class="<?php if ( $this->currentUserPage === $page ) { echo 'current'; } ?>">
-                <span class="bbp-user-<?php echo esc_attr( $page['slug'] ); ?>-link">
-                    <a href="<?php \bbp_user_profile_url(); echo esc_attr( $page['slug'] ); ?>/"
-                        title="<?php echo \esc_html( $page['title'] ); ?>">
-                        <?php echo \esc_html( $page['title'] ); ?>
-                    </a>
-                </span>
-            </li>
-            <?php
+            $link = tag(
+                'a',
+                [
+                    'href' => \bbp_get_user_profile_url() . $page['slug'],
+                    'title' => $page['title'],
+                ],
+                \esc_html($page['title'])
+            );
+            print tag(
+                'li',
+                ['class' => ($this->currentUserPage === $page) ? 'current' : ''],
+                tag(
+                    'span',
+                    ['class' => sprintf('bbp-user-%s-link', $page['slug'])],
+                    $link
+                )
+            );
         }
     }
 
