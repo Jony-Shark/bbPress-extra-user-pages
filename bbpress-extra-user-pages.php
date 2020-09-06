@@ -35,4 +35,4 @@ function beup_init()
         new ExtraUserPages();
 }
 
-\add_action('init', 'beup_init');
+\add_action('init', __NAMESPACE__ . '\\beup_init');
